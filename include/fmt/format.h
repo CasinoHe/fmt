@@ -1766,11 +1766,15 @@ template <typename OutputIt, typename Char, typename UInt> struct int_writer {
   }
 
   FMT_CONSTEXPR void on_hex() {
+    int num_digits = count_digits<4>(abs_value);
     if (specs.alt) {
       prefix[prefix_size++] = '0';
       prefix[prefix_size++] = specs.type;
+    } else if (specs.width == 0 && specs.precision == 0) {
+      if (prefix_size != 0) *out++ = static_cast<Char>(prefix[0]);
+      out = format_uint<4, Char>(out, abs_value, num_digits, specs.type != 'x');
+      return;
     }
-    int num_digits = count_digits<4>(abs_value);
     out = write_int(out, num_digits, get_prefix(), specs,
                     [this, num_digits](iterator it) {
                       return format_uint<4, Char>(it, abs_value, num_digits,
